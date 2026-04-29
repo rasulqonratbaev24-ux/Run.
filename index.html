@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ludo Race</title>
+<title>Ludo PRO</title>
 
 <style>
 body {
   margin: 0;
-  background: #0f172a;
+  overflow: hidden;
   font-family: Arial;
 }
 
@@ -24,12 +24,18 @@ body {
 }
 
 button {
-  padding: 12px 25px;
+  padding: 14px 28px;
   font-size: 18px;
   background: orange;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#navbat {
+  color: white;
+  margin-top: 10px;
 }
 </style>
 </head>
@@ -57,18 +63,20 @@ resize();
 const total = 100;
 const path = [];
 
-// 🎯 Snake-style yo‘l (egri, chiroyli)
+// 🌳 FON RASM
+const bg = new Image();
+bg.src = "https://i.imgur.com/8wKQZ5M.jpg"; // o‘rmon fon
+
+// 🎯 YO‘LAK (snake)
 function generatePath() {
   path.length = 0;
 
-  const margin = 40;
+  const margin = 60;
   const cols = 10;
   const rows = 10;
 
   const cellW = (canvas.width - margin * 2) / cols;
   const cellH = (canvas.height - margin * 2) / rows;
-
-  let count = 0;
 
   for (let y = 0; y < rows; y++) {
     if (y % 2 === 0) {
@@ -77,7 +85,6 @@ function generatePath() {
           x: margin + x * cellW + cellW / 2,
           y: margin + y * cellH + cellH / 2
         });
-        count++;
       }
     } else {
       for (let x = cols - 1; x >= 0; x--) {
@@ -85,7 +92,6 @@ function generatePath() {
           x: margin + x * cellW + cellW / 2,
           y: margin + y * cellH + cellH / 2
         });
-        count++;
       }
     }
   }
@@ -118,20 +124,56 @@ function rollDice() {
 
 // 🔄 Navbat
 function updateTurn() {
-  const icons = ["🔴", "🔵", "🟢", "🟡"];
+  const icons = ["🔴","🔵","🟢","🟡"];
   document.getElementById("navbat").innerText =
     "Navbat: " + icons[current];
 }
 
-// 🎨 Chizish
+// ⭐ MAXSUS KETEKLAR
+const special = {
+  freeze: [10, 25, 44, 70],
+  back: [15, 55],
+  bonus: [5, 33, 66, 88],
+  prize: [20, 50, 75, 95]
+};
+
+function applyEffects(player) {
+  if (special.freeze.includes(player.pos)) {
+    alert("❄️ Muzlaw!");
+    current = (current + 1) % players.length;
+  }
+  if (special.back.includes(player.pos)) {
+    player.pos -= 5;
+  }
+  if (special.bonus.includes(player.pos)) {
+    player.pos += 3;
+  }
+  if (special.prize.includes(player.pos)) {
+    alert("🎁 Priz!");
+  }
+}
+
+// 🎨 CHIZISH
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Kataklar
+  // 🌳 fon
+  if (bg.complete) {
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+  }
+
+  // kataklar
   path.forEach((p, i) => {
     ctx.beginPath();
     ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
+
     ctx.fillStyle = "#d6b98c";
+
+    if (special.freeze.includes(i)) ctx.fillStyle = "#4fc3f7";
+    if (special.back.includes(i)) ctx.fillStyle = "#000";
+    if (special.bonus.includes(i)) ctx.fillStyle = "gold";
+    if (special.prize.includes(i)) ctx.fillStyle = "lime";
+
     ctx.fill();
 
     ctx.fillStyle = "#000";
@@ -140,7 +182,7 @@ function draw() {
     ctx.fillText(i + 1, p.x, p.y + 3);
   });
 
-  // 🔴🔵🟢🟡 Donachalar
+  // donachalar
   players.forEach((pl, i) => {
     const pos = path[pl.pos];
     if (!pos) return;
@@ -151,14 +193,17 @@ function draw() {
     ctx.arc(pos.x + offset, pos.y + offset, 8, 0, Math.PI * 2);
     ctx.fillStyle = pl.color;
     ctx.fill();
-
-    ctx.lineWidth = 2;
     ctx.strokeStyle = "#fff";
     ctx.stroke();
   });
+
+  // START / FINISH
+  ctx.fillStyle = "white";
+  ctx.fillText("START", path[0].x, path[0].y - 20);
+  ctx.fillText("FINISH", path[99].x, path[99].y - 20);
 }
 
-// 🔁 Loop
+// 🔁 LOOP
 function loop() {
   generatePath();
   draw();
