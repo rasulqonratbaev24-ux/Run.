@@ -2,52 +2,68 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<title>Animal Race Pro</title>
+<title>Ludo Race PRO</title>
 
 <style>
 body{
-  background: linear-gradient(135deg,#1e1e2f,#2c3e50);
+  margin:0;
+  background:url("https://i.imgur.com/6Iej2c3.jpg") no-repeat center;
+  background-size:cover;
+  font-family:sans-serif;
   color:white;
   text-align:center;
-  font-family:sans-serif;
 }
 
 h1{margin-top:10px;}
 
-#board{
-  display:grid;
-  grid-template-columns: repeat(10,60px);
-  gap:6px;
-  justify-content:center;
-  margin:20px;
-}
-
-.cell{
-  width:60px;
-  height:60px;
-  background:#34495e;
-  border-radius:12px;
+#game{
   position:relative;
+  width:420px;
+  height:650px;
+  margin:auto;
 }
 
-.cell:nth-child(odd){
-  background:#3d566e;
+/* YO'L KETEKLAR */
+.cell{
+  position:absolute;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#e6c78f;
+  text-align:center;
+  line-height:36px;
+  font-size:11px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.4);
 }
 
+/* SPECIAL */
+.ice{background:#5dade2;}
+.bonus{background:#f1c40f;}
+.prize{background:#2ecc71;}
+.trap{background:#2c3e50;}
+
+/* LUDO CHIP */
 .player{
   position:absolute;
-  font-size:22px;
-  transition:all 0.25s ease;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  top:9px;
+  left:9px;
+  border:2px solid white;
 }
 
-#dice{
-  font-size:50px;
-  margin:20px;
-  transition: all 0.4s ease;
-}
+/* ranglar */
+.p0{background:red;}
+.p1{background:blue;}
+.p2{background:green;}
+.p3{background:yellow;}
 
-.roll{
-  transform: scale(2) rotate(360deg);
+/* CONTROL */
+#controls{
+  position:fixed;
+  bottom:20px;
+  width:100%;
 }
 
 button{
@@ -57,159 +73,147 @@ button{
   border-radius:10px;
   background:#e67e22;
   color:white;
-  cursor:pointer;
 }
 
-button:hover{
-  background:#d35400;
-}
-
-#status{
-  font-size:20px;
-  margin-top:10px;
-}
-
-.active{
-  color: #f1c40f;
-  font-weight:bold;
+#dice{
+  font-size:30px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🐾 Animal Race PRO</h1>
+<h1>🎲 Ludo Race PRO</h1>
 
-<div id="board"></div>
+<div id="game"></div>
 
-<div id="dice">🎲</div>
-<button onclick="rollDice()">Zariq tashla</button>
-
-<div id="status"></div>
+<div id="controls">
+  <div id="dice">🎲</div>
+  <button onclick="roll()">Taslaw</button>
+  <div id="status"></div>
+</div>
 
 <script>
-const board = document.getElementById("board");
-const dice = document.getElementById("dice");
+const game = document.getElementById("game");
 const statusText = document.getElementById("status");
+const dice = document.getElementById("dice");
 
-const totalCells = 40;
-const players = ["🦁","🐯","🐺","🐼"];
+const total = 100;
 
-let positions = [0,0,0,0];
-let currentPlayer = 0;
-let skipTurn = [false,false,false,false];
+/* LUDO */
+const players = ["p0","p1","p2","p3"];
+let pos = [0,0,0,0];
+let turn = 0;
+let skip = [false,false,false,false];
 
-// BOARD (zig-zag)
+/* YO'L GENERATSIYA (egri) */
 let cells = [];
 
-for(let row=0; row<4; row++){
-  let rowCells = [];
-  for(let col=0; col<10; col++){
-    let index = row*10 + col;
-    rowCells.push(index);
-  }
-  if(row % 2 === 1) rowCells.reverse();
-  cells.push(...rowCells);
+for(let i=0;i<total;i++){
+  let angle = i * 0.3;
+  let x = 200 + Math.cos(angle)* (i*2);
+  let y = 50 + i*5;
+
+  cells.push({x,y});
 }
 
-cells.forEach(i=>{
-  let cell = document.createElement("div");
-  cell.classList.add("cell");
-  cell.id = "cell-"+i;
-  board.appendChild(cell);
+/* CREATE */
+cells.forEach((c,i)=>{
+  let el = document.createElement("div");
+  el.className="cell";
+  el.style.left=c.x+"px";
+  el.style.top=c.y+"px";
+  el.id="c"+i;
+  el.innerText=i+1;
+
+  game.appendChild(el);
 });
 
-function renderPlayers(){
-  document.querySelectorAll(".player").forEach(p=>p.remove());
+/* SPECIAL RANDOM */
+function rand(n){return Math.floor(Math.random()*n);}
+
+for(let i=0;i<4;i++){
+  document.getElementById("c"+rand(100)).classList.add("ice");
+  document.getElementById("c"+rand(100)).classList.add("bonus");
+  document.getElementById("c"+rand(100)).classList.add("prize");
+}
+
+for(let i=0;i<2;i++){
+  document.getElementById("c"+rand(100)).classList.add("trap");
+}
+
+/* RENDER */
+function render(){
+  document.querySelectorAll(".player").forEach(e=>e.remove());
 
   players.forEach((p,i)=>{
-    let pos = positions[i];
-    let cell = document.getElementById("cell-"+pos);
-
+    let cell = document.getElementById("c"+pos[i]);
     let el = document.createElement("div");
-    el.classList.add("player");
-    el.innerText = p;
-
-    el.style.top = (i*14)+"px";
-
+    el.className="player "+p;
     cell.appendChild(el);
   });
 }
 
-function rollDice(){
+/* DICE */
+function roll(){
 
-  if(skipTurn[currentPlayer]){
-    skipTurn[currentPlayer] = false;
-    alert(players[currentPlayer] + " skip qildi ❄️");
-    nextPlayer();
+  if(skip[turn]){
+    skip[turn]=false;
+    alert("Skip!");
+    next();
     return;
   }
 
-  let roll = Math.floor(Math.random()*6)+1;
+  let r = Math.floor(Math.random()*6)+1;
+  dice.innerText=r;
 
-  dice.classList.add("roll");
-  dice.innerText = roll;
-
-  setTimeout(()=>{
-    dice.classList.remove("roll");
-    movePlayer(roll);
-  },500);
+  move(r);
 }
 
-function movePlayer(roll){
-  let steps = roll;
-
-  function step(){
-    if(steps === 0){
-      afterMove();
-      return;
-    }
-
-    positions[currentPlayer]++;
-    renderPlayers();
-    steps--;
-
-    setTimeout(step, 250);
-  }
-
-  step();
+function move(step){
+  if(step==0){after();return;}
+  pos[turn]++;
+  render();
+  setTimeout(()=>move(step-1),200);
 }
 
-function afterMove(){
+function after(){
+  let p = pos[turn];
+  let cell = document.getElementById("c"+p);
 
-  let pos = positions[currentPlayer];
-
-  // BONUS
-  if(pos % 7 === 0){
-    positions[currentPlayer] += 2;
-    alert("⭐ Bonus +2");
+  if(cell.classList.contains("ice")){
+    skip[turn]=true;
   }
 
-  // SKIP
-  if(pos % 5 === 0){
-    skipTurn[currentPlayer] = true;
-    alert("❄️ Keyingi navbat skip");
+  if(cell.classList.contains("bonus")){
+    pos[turn]+=3;
   }
 
-  renderPlayers();
-
-  // WIN
-  if(positions[currentPlayer] >= totalCells-1){
-    statusText.innerHTML = players[currentPlayer] + " G‘OLIB! 🏆";
+  if(cell.classList.contains("prize")){
+    roll();
     return;
   }
 
-  nextPlayer();
+  if(cell.classList.contains("trap")){
+    pos[turn]-=5;
+    if(pos[turn]<0) pos[turn]=0;
+  }
+
+  if(pos[turn]>=99){
+    statusText.innerText="🏆 G‘OLIB!";
+    return;
+  }
+
+  next();
 }
 
-function nextPlayer(){
-  currentPlayer = (currentPlayer + 1) % 4;
-  statusText.innerHTML = "Navbat: <span class='active'>" + players[currentPlayer] + "</span>";
+function next(){
+  turn=(turn+1)%4;
+  statusText.innerText="Nawbet: "+(turn+1);
 }
 
-renderPlayers();
-nextPlayer();
-
+render();
+next();
 </script>
 
 </body>
