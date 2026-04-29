@@ -2,218 +2,155 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<title>Ludo Race PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ludo Race</title>
 
 <style>
-body{
-  margin:0;
-  background:url("https://i.imgur.com/6Iej2c3.jpg") no-repeat center;
-  background-size:cover;
-  font-family:sans-serif;
-  color:white;
-  text-align:center;
+body {
+  margin: 0;
+  background: #0f172a;
+  overflow: hidden;
+  font-family: Arial;
 }
 
-h1{margin-top:10px;}
-
-#game{
-  position:relative;
-  width:420px;
-  height:650px;
-  margin:auto;
+#board {
+  display: block;
 }
 
-/* YO'L KETEKLAR */
-.cell{
-  position:absolute;
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:#e6c78f;
-  text-align:center;
-  line-height:36px;
-  font-size:11px;
-  box-shadow:0 2px 4px rgba(0,0,0,0.4);
+#ui {
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
 }
 
-/* SPECIAL */
-.ice{background:#5dade2;}
-.bonus{background:#f1c40f;}
-.prize{background:#2ecc71;}
-.trap{background:#2c3e50;}
-
-/* LUDO CHIP */
-.player{
-  position:absolute;
-  width:18px;
-  height:18px;
-  border-radius:50%;
-  top:9px;
-  left:9px;
-  border:2px solid white;
-}
-
-/* ranglar */
-.p0{background:red;}
-.p1{background:blue;}
-.p2{background:green;}
-.p3{background:yellow;}
-
-/* CONTROL */
-#controls{
-  position:fixed;
-  bottom:20px;
-  width:100%;
-}
-
-button{
-  padding:12px 25px;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
-  background:#e67e22;
-  color:white;
-}
-
-#dice{
-  font-size:30px;
+button {
+  padding: 12px 25px;
+  font-size: 18px;
+  background: orange;
+  border: none;
+  border-radius: 8px;
+  color: white;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎲 Ludo Race PRO</h1>
+<canvas id="board"></canvas>
 
-<div id="game"></div>
-
-<div id="controls">
-  <div id="dice">🎲</div>
-  <button onclick="roll()">Taslaw</button>
-  <div id="status"></div>
+<div id="ui">
+  <button onclick="rollDice()">Taslaw 🎲</button>
+  <div id="navbat">Navbat: 🔴</div>
 </div>
 
 <script>
-const game = document.getElementById("game");
-const statusText = document.getElementById("status");
-const dice = document.getElementById("dice");
+const canvas = document.getElementById("board");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
 
 const total = 100;
+const path = [];
 
-/* LUDO */
-const players = ["p0","p1","p2","p3"];
-let pos = [0,0,0,0];
-let turn = 0;
-let skip = [false,false,false,false];
+// 🔵 O‘yinchilar (Ludo donachalar)
+const players = [
+  { color: "red", pos: 0 },
+  { color: "blue", pos: 0 },
+  { color: "green", pos: 0 },
+  { color: "yellow", pos: 0 }
+];
 
-/* YO'L GENERATSIYA (egri) */
-let cells = [];
+let current = 0;
 
-for(let i=0;i<total;i++){
-  let angle = i * 0.3;
-  let x = 200 + Math.cos(angle)* (i*2);
-  let y = 50 + i*5;
+// 🎲 Zar tashlash
+function rollDice() {
+  const dice = Math.floor(Math.random() * 6) + 1;
 
-  cells.push({x,y});
+  players[current].pos += dice;
+  if (players[current].pos >= total) {
+    alert(players[current].color + " yutdi!");
+    players[current].pos = total - 1;
+  }
+
+  current = (current + 1) % players.length;
+  updateTurn();
 }
 
-/* CREATE */
-cells.forEach((c,i)=>{
-  let el = document.createElement("div");
-  el.className="cell";
-  el.style.left=c.x+"px";
-  el.style.top=c.y+"px";
-  el.id="c"+i;
-  el.innerText=i+1;
-
-  game.appendChild(el);
-});
-
-/* SPECIAL RANDOM */
-function rand(n){return Math.floor(Math.random()*n);}
-
-for(let i=0;i<4;i++){
-  document.getElementById("c"+rand(100)).classList.add("ice");
-  document.getElementById("c"+rand(100)).classList.add("bonus");
-  document.getElementById("c"+rand(100)).classList.add("prize");
+// 🔄 Navbat ko‘rsatish
+function updateTurn() {
+  const colors = ["🔴", "🔵", "🟢", "🟡"];
+  document.getElementById("navbat").innerText =
+    "Navbat: " + colors[current];
 }
 
-for(let i=0;i<2;i++){
-  document.getElementById("c"+rand(100)).classList.add("trap");
+// 📍 Yo‘lak generatsiya (spiral)
+function generatePath() {
+  path.length = 0;
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  const scale = Math.min(canvas.width, canvas.height) / 25;
+
+  for (let i = 0; i < total; i++) {
+    const angle = i * 0.25;
+    const radius = i * 0.6;
+
+    const x = centerX + Math.cos(angle) * radius * scale;
+    const y = centerY + Math.sin(angle) * radius * scale;
+
+    path.push({ x, y });
+  }
 }
 
-/* RENDER */
-function render(){
-  document.querySelectorAll(".player").forEach(e=>e.remove());
+// 🎨 Chizish
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  players.forEach((p,i)=>{
-    let cell = document.getElementById("c"+pos[i]);
-    let el = document.createElement("div");
-    el.className="player "+p;
-    cell.appendChild(el);
+  // Yo‘lak
+  path.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
+    ctx.fillStyle = "#d6b98c";
+    ctx.fill();
+
+    ctx.fillStyle = "#000";
+    ctx.font = "10px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(i + 1, p.x, p.y + 3);
+  });
+
+  // 🔴🔵🟢🟡 DONACHALAR
+  players.forEach((pl, i) => {
+    const pos = path[pl.pos];
+    if (!pos) return;
+
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = pl.color;
+    ctx.fill();
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "white";
+    ctx.stroke();
   });
 }
 
-/* DICE */
-function roll(){
-
-  if(skip[turn]){
-    skip[turn]=false;
-    alert("Skip!");
-    next();
-    return;
-  }
-
-  let r = Math.floor(Math.random()*6)+1;
-  dice.innerText=r;
-
-  move(r);
+// 🔁 Loop
+function loop() {
+  generatePath();
+  draw();
+  requestAnimationFrame(loop);
 }
 
-function move(step){
-  if(step==0){after();return;}
-  pos[turn]++;
-  render();
-  setTimeout(()=>move(step-1),200);
-}
-
-function after(){
-  let p = pos[turn];
-  let cell = document.getElementById("c"+p);
-
-  if(cell.classList.contains("ice")){
-    skip[turn]=true;
-  }
-
-  if(cell.classList.contains("bonus")){
-    pos[turn]+=3;
-  }
-
-  if(cell.classList.contains("prize")){
-    roll();
-    return;
-  }
-
-  if(cell.classList.contains("trap")){
-    pos[turn]-=5;
-    if(pos[turn]<0) pos[turn]=0;
-  }
-
-  if(pos[turn]>=99){
-    statusText.innerText="🏆 G‘OLIB!";
-    return;
-  }
-
-  next();
-}
-
-function next(){
-  turn=(turn+1)%4;
-  statusText.innerText="Nawbet: "+(turn+1);
-}
-
-render();
-next();
+updateTurn();
+loop();
 </script>
 
 </body>
