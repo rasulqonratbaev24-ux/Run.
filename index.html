@@ -9,7 +9,6 @@
 body {
   margin: 0;
   background: #0f172a;
-  overflow: hidden;
   font-family: Arial;
 }
 
@@ -58,7 +57,41 @@ resize();
 const total = 100;
 const path = [];
 
-// 🔵 O‘yinchilar (Ludo donachalar)
+// 🎯 Snake-style yo‘l (egri, chiroyli)
+function generatePath() {
+  path.length = 0;
+
+  const margin = 40;
+  const cols = 10;
+  const rows = 10;
+
+  const cellW = (canvas.width - margin * 2) / cols;
+  const cellH = (canvas.height - margin * 2) / rows;
+
+  let count = 0;
+
+  for (let y = 0; y < rows; y++) {
+    if (y % 2 === 0) {
+      for (let x = 0; x < cols; x++) {
+        path.push({
+          x: margin + x * cellW + cellW / 2,
+          y: margin + y * cellH + cellH / 2
+        });
+        count++;
+      }
+    } else {
+      for (let x = cols - 1; x >= 0; x--) {
+        path.push({
+          x: margin + x * cellW + cellW / 2,
+          y: margin + y * cellH + cellH / 2
+        });
+        count++;
+      }
+    }
+  }
+}
+
+// 🎮 O‘yinchilar
 const players = [
   { color: "red", pos: 0 },
   { color: "blue", pos: 0 },
@@ -68,11 +101,12 @@ const players = [
 
 let current = 0;
 
-// 🎲 Zar tashlash
+// 🎲 Zar
 function rollDice() {
   const dice = Math.floor(Math.random() * 6) + 1;
 
   players[current].pos += dice;
+
   if (players[current].pos >= total) {
     alert(players[current].color + " yutdi!");
     players[current].pos = total - 1;
@@ -82,41 +116,21 @@ function rollDice() {
   updateTurn();
 }
 
-// 🔄 Navbat ko‘rsatish
+// 🔄 Navbat
 function updateTurn() {
-  const colors = ["🔴", "🔵", "🟢", "🟡"];
+  const icons = ["🔴", "🔵", "🟢", "🟡"];
   document.getElementById("navbat").innerText =
-    "Navbat: " + colors[current];
-}
-
-// 📍 Yo‘lak generatsiya (spiral)
-function generatePath() {
-  path.length = 0;
-
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
-
-  const scale = Math.min(canvas.width, canvas.height) / 25;
-
-  for (let i = 0; i < total; i++) {
-    const angle = i * 0.25;
-    const radius = i * 0.6;
-
-    const x = centerX + Math.cos(angle) * radius * scale;
-    const y = centerY + Math.sin(angle) * radius * scale;
-
-    path.push({ x, y });
-  }
+    "Navbat: " + icons[current];
 }
 
 // 🎨 Chizish
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Yo‘lak
+  // Kataklar
   path.forEach((p, i) => {
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
     ctx.fillStyle = "#d6b98c";
     ctx.fill();
 
@@ -126,18 +140,20 @@ function draw() {
     ctx.fillText(i + 1, p.x, p.y + 3);
   });
 
-  // 🔴🔵🟢🟡 DONACHALAR
+  // 🔴🔵🟢🟡 Donachalar
   players.forEach((pl, i) => {
     const pos = path[pl.pos];
     if (!pos) return;
 
+    const offset = i * 5;
+
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+    ctx.arc(pos.x + offset, pos.y + offset, 8, 0, Math.PI * 2);
     ctx.fillStyle = pl.color;
     ctx.fill();
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle = "#fff";
     ctx.stroke();
   });
 }
