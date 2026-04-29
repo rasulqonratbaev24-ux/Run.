@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>Animal Race Pro</title>
+
+<style>
+body{
+  background: linear-gradient(135deg,#1e1e2f,#2c3e50);
+  color:white;
+  text-align:center;
+  font-family:sans-serif;
+}
+
+h1{margin-top:10px;}
+
+#board{
+  display:grid;
+  grid-template-columns: repeat(10,60px);
+  gap:6px;
+  justify-content:center;
+  margin:20px;
+}
+
+.cell{
+  width:60px;
+  height:60px;
+  background:#34495e;
+  border-radius:12px;
+  position:relative;
+}
+
+.cell:nth-child(odd){
+  background:#3d566e;
+}
+
+.player{
+  position:absolute;
+  font-size:22px;
+  transition:all 0.25s ease;
+}
+
+#dice{
+  font-size:50px;
+  margin:20px;
+  transition: all 0.4s ease;
+}
+
+.roll{
+  transform: scale(2) rotate(360deg);
+}
+
+button{
+  padding:12px 25px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:#e67e22;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#d35400;
+}
+
+#status{
+  font-size:20px;
+  margin-top:10px;
+}
+
+.active{
+  color: #f1c40f;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐾 Animal Race PRO</h1>
+
+<div id="board"></div>
+
+<div id="dice">🎲</div>
+<button onclick="rollDice()">Zariq tashla</button>
+
+<div id="status"></div>
+
+<script>
+const board = document.getElementById("board");
+const dice = document.getElementById("dice");
+const statusText = document.getElementById("status");
+
+const totalCells = 40;
+const players = ["🦁","🐯","🐺","🐼"];
+
+let positions = [0,0,0,0];
+let currentPlayer = 0;
+let skipTurn = [false,false,false,false];
+
+// BOARD (zig-zag)
+let cells = [];
+
+for(let row=0; row<4; row++){
+  let rowCells = [];
+  for(let col=0; col<10; col++){
+    let index = row*10 + col;
+    rowCells.push(index);
+  }
+  if(row % 2 === 1) rowCells.reverse();
+  cells.push(...rowCells);
+}
+
+cells.forEach(i=>{
+  let cell = document.createElement("div");
+  cell.classList.add("cell");
+  cell.id = "cell-"+i;
+  board.appendChild(cell);
+});
+
+function renderPlayers(){
+  document.querySelectorAll(".player").forEach(p=>p.remove());
+
+  players.forEach((p,i)=>{
+    let pos = positions[i];
+    let cell = document.getElementById("cell-"+pos);
+
+    let el = document.createElement("div");
+    el.classList.add("player");
+    el.innerText = p;
+
+    el.style.top = (i*14)+"px";
+
+    cell.appendChild(el);
+  });
+}
+
+function rollDice(){
+
+  if(skipTurn[currentPlayer]){
+    skipTurn[currentPlayer] = false;
+    alert(players[currentPlayer] + " skip qildi ❄️");
+    nextPlayer();
+    return;
+  }
+
+  let roll = Math.floor(Math.random()*6)+1;
+
+  dice.classList.add("roll");
+  dice.innerText = roll;
+
+  setTimeout(()=>{
+    dice.classList.remove("roll");
+    movePlayer(roll);
+  },500);
+}
+
+function movePlayer(roll){
+  let steps = roll;
+
+  function step(){
+    if(steps === 0){
+      afterMove();
+      return;
+    }
+
+    positions[currentPlayer]++;
+    renderPlayers();
+    steps--;
+
+    setTimeout(step, 250);
+  }
+
+  step();
+}
+
+function afterMove(){
+
+  let pos = positions[currentPlayer];
+
+  // BONUS
+  if(pos % 7 === 0){
+    positions[currentPlayer] += 2;
+    alert("⭐ Bonus +2");
+  }
+
+  // SKIP
+  if(pos % 5 === 0){
+    skipTurn[currentPlayer] = true;
+    alert("❄️ Keyingi navbat skip");
+  }
+
+  renderPlayers();
+
+  // WIN
+  if(positions[currentPlayer] >= totalCells-1){
+    statusText.innerHTML = players[currentPlayer] + " G‘OLIB! 🏆";
+    return;
+  }
+
+  nextPlayer();
+}
+
+function nextPlayer(){
+  currentPlayer = (currentPlayer + 1) % 4;
+  statusText.innerHTML = "Navbat: <span class='active'>" + players[currentPlayer] + "</span>";
+}
+
+renderPlayers();
+nextPlayer();
+
+</script>
+
+</body>
+</html>
