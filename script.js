@@ -17,8 +17,8 @@ function generatePath(n) {
     path.push({ x, y });
 
     // 🔥 MUHIM: sekin aylansin, kengaysin
-    angle += 0.25;     // burilish tezligi
-    radius += 3;       // orasini ochadi
+    angle += 0.50;     // burilish tezligi
+    radius += 5;       // orasini ochadi
   }
 
   return path;
