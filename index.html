@@ -2,18 +2,109 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ludo PRO</title>
-<link rel="stylesheet" href="style.css">
+<title>Ludo Dice</title>
+
+<style>
+body{
+  background:#222;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  flex-direction:column;
+  color:white;
+}
+
+.dice{
+  width:200px;
+  height:200px;
+  background:white;
+  border-radius:20px;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding:20px;
+  gap:10px;
+  box-shadow:0 0 20px black;
+}
+
+.dot{
+  width:30px;
+  height:30px;
+  background:black;
+  border-radius:50%;
+  margin:auto;
+  display:none;
+}
+
+button{
+  margin-top:20px;
+  padding:10px 20px;
+  font-size:18px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Ludo PRO 🎲</h2>
+<div class="dice" id="dice">
+  <div class="dot" id="d1"></div>
+  <div class="dot" id="d2"></div>
+  <div class="dot" id="d3"></div>
+  <div class="dot" id="d4"></div>
+  <div class="dot" id="d5"></div>
+  <div class="dot" id="d6"></div>
+  <div class="dot" id="d7"></div>
+</div>
 
-<div id="board"></div>
+<button onclick="rollDice()">🎲 Tashla</button>
 
-<button onclick="rollDice()" id="btn">Taslaw 🎲</button>
+<script>
+function show(value){
+  for(let i=1;i<=7;i++){
+    document.getElementById("d"+i).style.display="none";
+  }
 
-<script src="script.js"></script>
+  if(value==1){
+    document.getElementById("d5").style.display="block";
+  }
+  if(value==2){
+    document.getElementById("d1").style.display="block";
+    document.getElementById("d7").style.display="block";
+  }
+  if(value==3){
+    document.getElementById("d1").style.display="block";
+    document.getElementById("d5").style.display="block";
+    document.getElementById("d7").style.display="block";
+  }
+  if(value==4){
+    document.getElementById("d1").style.display="block";
+    document.getElementById("d3").style.display="block";
+    document.getElementById("d6").style.display="block";
+    document.getElementById("d7").style.display="block";
+  }
+  if(value==5){
+    document.getElementById("d1").style.display="block";
+    document.getElementById("d3").style.display="block";
+    document.getElementById("d5").style.display="block";
+    document.getElementById("d6").style.display="block";
+    document.getElementById("d7").style.display="block";
+  }
+  if(value==6){
+    document.getElementById("d1").style.display="block";
+    document.getElementById("d2").style.display="block";
+    document.getElementById("d3").style.display="block";
+    document.getElementById("d4").style.display="block";
+    document.getElementById("d6").style.display="block";
+    document.getElementById("d7").style.display="block";
+  }
+}
+
+function rollDice(){
+  let value = Math.floor(Math.random()*6)+1;
+  show(value);
+}
+</script>
+
 </body>
 </html>
