@@ -3,24 +3,26 @@ const board = document.getElementById("board");
 /* 🔥 EGRA YO'L */
 function generatePath(n) {
   const path = [];
+
   const cx = window.innerWidth / 2;
-  const cy = 300;
+  const cy = 350;
+
+  let angle = 0;
+  let radius = 40;
 
   for (let i = 0; i < n; i++) {
-    const angle = i * 0.35;
-    const radius = 20 + i * 2.5;
-
     const x = cx + radius * Math.cos(angle);
     const y = cy + radius * Math.sin(angle);
 
     path.push({ x, y });
+
+    // 🔥 MUHIM: sekin aylansin, kengaysin
+    angle += 0.25;     // burilish tezligi
+    radius += 3;       // orasini ochadi
   }
 
   return path;
 }
-
-const path = generatePath(100);
-
 /* 🟤 KATAKLAR */
 path.forEach((p, i) => {
   const cell = document.createElement("div");
