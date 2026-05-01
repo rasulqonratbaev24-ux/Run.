@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  background: #0b1f3a;
+  color: white;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+#board {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+}
+
+/* katak */
+.cell {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #d2b48c;
+  text-align: center;
+  line-height: 34px;
+  font-size: 11px;
+}
+
+/* special */
+.freeze { background: #5dade2; }
+.black { background: black; color: white; }
+.bonus { background: gold; }
+.prize { background: limegreen; }
+
+/* player */
+.player {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* button */
+#btn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  background: orange;
+}
