@@ -1,109 +1,138 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Ludo Dice</title>
-
-<style>
-body{
-  background:#222;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  flex-direction:column;
-  color:white;
-}
-
-.dice{
-  width:200px;
-  height:200px;
-  background:white;
-  border-radius:20px;
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  padding:20px;
-  gap:10px;
-  box-shadow:0 0 20px black;
-}
-
-.dot{
-  width:30px;
-  height:30px;
-  background:black;
-  border-radius:50%;
-  margin:auto;
-  display:none;
-}
-
-button{
-  margin-top:20px;
-  padding:10px 20px;
-  font-size:18px;
-}
-</style>
+  <title>Jeopardy 40 Savol</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    table { margin: auto; border-collapse: collapse; }
+    td, th {
+      width: 120px;
+      height: 80px;
+      border: 2px solid black;
+      cursor: pointer;
+      background: blue;
+      color: white;
+      font-size: 18px;
+    }
+    th { background: darkred; }
+    td:hover { background: darkblue; }
+  </style>
 </head>
-
 <body>
 
-<div class="dice" id="dice">
-  <div class="dot" id="d1"></div>
-  <div class="dot" id="d2"></div>
-  <div class="dot" id="d3"></div>
-  <div class="dot" id="d4"></div>
-  <div class="dot" id="d5"></div>
-  <div class="dot" id="d6"></div>
-  <div class="dot" id="d7"></div>
-</div>
+<h1>Jeopardy O‘yini</h1>
+<h2>Score: <span id="score">0</span></h2>
 
-<button onclick="rollDice()">🎲 Tashla</button>
+<table id="board"></table>
 
 <script>
-function show(value){
-  for(let i=1;i<=7;i++){
-    document.getElementById("d"+i).style.display="none";
-  }
+let score = 0;
 
-  if(value==1){
-    document.getElementById("d5").style.display="block";
+const categories = [
+  "Matematika", "Tarix", "Geografiya", "Ingliz tili",
+  "Sport", "Texnologiya", "Fan", "Umumiy bilim"
+];
+
+const questions = [
+  // Har kategoriya uchun 5 ta savol
+  [
+    {q:"2+2?", a:"4"},
+    {q:"5×5?", a:"25"},
+    {q:"10-3?", a:"7"},
+    {q:"12/4?", a:"3"},
+    {q:"9+8?", a:"17"}
+  ],
+  [
+    {q:"Amir Temur qayerda tug‘ilgan?", a:"Shahrisabz"},
+    {q:"Ikkinchi jahon urushi qachon tugagan?", a:"1945"},
+    {q:"Birinchi prezident kim?", a:"Islom Karimov"},
+    {q:"O‘zbekiston mustaqilligi qachon?", a:"1991"},
+    {q:"Buyuk ipak yo‘li nima?", a:"savdo yo‘li"}
+  ],
+  [
+    {q:"Poytaxti Toshkent bo‘lgan davlat?", a:"O‘zbekiston"},
+    {q:"Dunyoning eng katta okeani?", a:"Tinch okeani"},
+    {q:"Eng uzun daryo?", a:"Nil"},
+    {q:"Eng katta qit’a?", a:"Osiyo"},
+    {q:"Eng sovuq materik?", a:"Antarktida"}
+  ],
+  [
+    {q:"Hello tarjimasi?", a:"salom"},
+    {q:"Apple nima?", a:"olma"},
+    {q:"Book nima?", a:"kitob"},
+    {q:"Go fe’lining 2-shakli?", a:"went"},
+    {q:"I am tarjimasi?", a:"menman"}
+  ],
+  [
+    {q:"Futbolda nechta o‘yinchi?", a:"11"},
+    {q:"Messi qaysi sportchi?", a:"futbolchi"},
+    {q:"Olimpiada necha yilda bir?", a:"4"},
+    {q:"NBA nima?", a:"basketbol ligasi"},
+    {q:"Ronaldo qaysi davlat?", a:"portugaliya"}
+  ],
+  [
+    {q:"Kompyuter miyasi?", a:"protsessor"},
+    {q:"Internet nima?", a:"tarmoq"},
+    {q:"Telefon dasturi?", a:"ilova"},
+    {q:"AI nima?", a:"suniy intellekt"},
+    {q:"Google nima?", a:"qidiruv tizimi"}
+  ],
+  [
+    {q:"Suv formulasi?", a:"h2o"},
+    {q:"Yer tortish kuchi?", a:"gravitatsiya"},
+    {q:"Quyosh nima?", a:"yulduz"},
+    {q:"Elektr toki nima?", a:"zaryad harakati"},
+    {q:"Odam tanasida suyak nechta?", a:"206"}
+  ],
+  [
+    {q:"Eng tez hayvon?", a:"gepard"},
+    {q:"Dunyo puli?", a:"dollar"},
+    {q:"Eng katta sayyora?", a:"yupiter"},
+    {q:"1 hafta necha kun?", a:"7"},
+    {q:"O‘zbekiston puli?", a:"so‘m"}
+  ]
+];
+
+const points = [100,200,300,400,500];
+
+function createBoard() {
+  let table = document.getElementById("board");
+
+  let header = "<tr>";
+  for(let c of categories){
+    header += "<th>"+c+"</th>";
   }
-  if(value==2){
-    document.getElementById("d1").style.display="block";
-    document.getElementById("d7").style.display="block";
-  }
-  if(value==3){
-    document.getElementById("d1").style.display="block";
-    document.getElementById("d5").style.display="block";
-    document.getElementById("d7").style.display="block";
-  }
-  if(value==4){
-    document.getElementById("d1").style.display="block";
-    document.getElementById("d3").style.display="block";
-    document.getElementById("d6").style.display="block";
-    document.getElementById("d7").style.display="block";
-  }
-  if(value==5){
-    document.getElementById("d1").style.display="block";
-    document.getElementById("d3").style.display="block";
-    document.getElementById("d5").style.display="block";
-    document.getElementById("d6").style.display="block";
-    document.getElementById("d7").style.display="block";
-  }
-  if(value==6){
-    document.getElementById("d1").style.display="block";
-    document.getElementById("d2").style.display="block";
-    document.getElementById("d3").style.display="block";
-    document.getElementById("d4").style.display="block";
-    document.getElementById("d6").style.display="block";
-    document.getElementById("d7").style.display="block";
+  header += "</tr>";
+  table.innerHTML += header;
+
+  for(let i=0;i<5;i++){
+    let row = "<tr>";
+    for(let j=0;j<8;j++){
+      row += `<td onclick="ask(${j},${i}, this)">${points[i]}</td>`;
+    }
+    row += "</tr>";
+    table.innerHTML += row;
   }
 }
 
-function rollDice(){
-  let value = Math.floor(Math.random()*6)+1;
-  show(value);
+function ask(cat, qIndex, cell){
+  let user = prompt(questions[cat][qIndex].q);
+
+  if(user && user.toLowerCase() == questions[cat][qIndex].a){
+    alert("To‘g‘ri!");
+    score += points[qIndex];
+  } else {
+    alert("Noto‘g‘ri! To‘g‘ri javob: "+questions[cat][qIndex].a);
+    score -= points[qIndex];
+  }
+
+  cell.style.background="gray";
+  cell.onclick=null;
+
+  document.getElementById("score").innerText = score;
 }
+
+createBoard();
 </script>
 
 </body>
